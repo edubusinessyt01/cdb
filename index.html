@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Rendimento CDB</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e; /* Fundo preto */
+            color: #ffffff; /* Texto branco */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #282828; /* Fundo da calculadora */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            width: 320px;
+        }
+        .container h2 {
+            margin-top: 0;
+            color: #ffcc00; /* Cor do título */
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-size: 14px;
+            color: #ffcc00; /* Cor das labels */
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ffcc00; /* Bordas amarelas */
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #3a3a3a; /* Fundo dos inputs */
+            color: #ffffff; /* Texto dos inputs */
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #ff6600; /* Cor da borda ao focar */
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #ff6600; /* Cor do botão */
+            color: #ffffff; /* Texto do botão */
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e55b00; /* Cor do botão ao passar o mouse */
+        }
+        .results {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #ffffff; /* Texto dos resultados */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Calculadora de CDB</h2>
+    <div class="form-group">
+        <label for="valorInvestido">Patrimônio Investido (R$):</label>
+        <input type="text" id="valorInvestido" placeholder="Ex: 3.300.000" oninput="formatarNumero(this)" required>
+    </div>
+    <div class="form-group">
+        <label for="porcentagemCDI">% do CDI:</label>
+        <input type="number" id="porcentagemCDI" value="100" step="0.1" required>
+    </div>
+    <div class="form-group">
+        <label for="taxaCDI">Taxa CDI Anual (%):</label>
+        <input type="number" id="taxaCDI" placeholder="Ex: 10.65" step="0.01" required>
+    </div>
+    <div class="form-group">
+        <label for="prazo">Prazo do Investimento:</label>
+        <select id="prazo" required>
+            <option value="180">Até 180 dias (22,5%)</option>
+            <option value="360">De 181 a 360 dias (20%)</option>
+            <option value="720">De 361 a 720 dias (17,5%)</option>
+            <option value="721">Acima de 720 dias (15%)</option>
+        </select>
+    </div>
+    <button onclick="calcularRendimento()">Calcular</button>
+    
+    <div class="results">
+        <p><strong>Rendimento Bruto Mensal:</strong> R$ <span id="rendimentoBruto"></span></p>
+        <p><strong>Rendimento Líquido Mensal:</strong> R$ <span id="rendimentoLiquido"></span></p>
+    </div>
+</div>
+
+<script>
+    // Função para formatar o valor do patrimônio com pontuações de milhar
+    function formatarNumero(input) {
+        let valor = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+        valor = parseInt(valor).toLocaleString('pt-BR'); // Formata para separador de milhar
+        input.value = valor;
+    }
+
+    function calcularRendimento() {
+        // Obter valores dos campos
+        const valorInvestido = parseFloat(document.getElementById("valorInvestido").value.replace(/\./g, ''));
+        const porcentagemCDI = parseFloat(document.getElementById("porcentagemCDI").value) / 100;
+        const taxaCDI = parseFloat(document.getElementById("taxaCDI").value) / 100;
+        const prazo = parseInt(document.getElementById("prazo").value);
+
+        // Determinar a alíquota de IR com base no prazo
+        let ir;
+        if (prazo <= 180) {
+            ir = 0.225; // 22,5% até 180 dias
+        } else if (prazo <= 360) {
+            ir = 0.20;  // 20% de 181 a 360 dias
+        } else if (prazo <= 720) {
+            ir = 0.175; // 17,5% de 361 a 720 dias
+        } else {
+            ir = 0.15;  // 15% acima de 720 dias
+        }
+
+        // Calcular rendimento anual e mensal
+        const rendimentoAnualBruto = valorInvestido * taxaCDI * porcentagemCDI;
+        const rendimentoMensalBruto = rendimentoAnualBruto / 12;
+
+        // Calcular rendimento líquido descontando o IR
+        const rendimentoMensalLiquido = rendimentoMensalBruto * (1 - ir);
+
+        // Função para formatar números em reais com separador de milhar e duas casas decimais
+        const formatarMoeda = (valor) => {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        };
+
+        // Exibir os resultados
+        document.getElementById("rendimentoBruto").innerText = formatarMoeda(rendimentoMensalBruto);
+        document.getElementById("rendimentoLiquido").innerText = formatarMoeda(rendimentoMensalLiquido);
+    }
+</script>
+
+</body>
+</html>
